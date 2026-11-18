@@ -1,0 +1,34 @@
+FROM ubuntu:24.04
+
+EXPOSE 5001
+
+WORKDIR /usr/src/app
+
+RUN apt-get update && apt-get install -y curl
+
+RUN curl -sL https://deb.nodesource.com/setup_16.x | bash
+
+RUN apt-get install -y nodejs
+
+COPY code/example-frontend/package*.json ./
+
+RUN npm install
+
+COPY code/example-frontend .
+
+ENV REACT_APP_BACKEND_URL=http://localhost:8080
+
+RUN npm run build
+
+RUN npm install -g serve
+
+# create the appuser
+RUN useradd -m appuser
+
+# change the owner of current dir to appuser
+RUN chown appuser .
+
+# now we can change the user
+USER appuser
+
+CMD ["serve", "-s", "-l", "5001", "build"]
