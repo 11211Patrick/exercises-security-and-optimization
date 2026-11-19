@@ -1,0 +1,26 @@
+FROM node:16.20.2-alpine3.18 AS build-stage
+
+WORKDIR /usr/src/app
+
+COPY code/example-frontend .
+
+ENV REACT_APP_BACKEND_URL=http://localhost:8080
+
+RUN npm install && \
+    npm run build 
+
+FROM node:16.20.2-alpine3.18
+
+WORKDIR /usr/src/app
+
+RUN npm install -g serve && \
+    adduser -D appuser
+
+COPY --from=build-stage /usr/src/app/build ./build
+
+EXPOSE 5001
+
+# now we can change the user
+USER appuser
+
+CMD ["serve", "-s", "-l", "5001", "build"]

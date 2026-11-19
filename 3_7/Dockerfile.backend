@@ -1,0 +1,19 @@
+FROM golang:1.16.15-alpine3.15
+
+EXPOSE 8080
+
+WORKDIR /usr/src/app
+
+COPY code/example-backend .
+
+ENV REQUEST_ORIGIN=http://localhost:5001
+
+RUN go build && \
+    go clean -cache -modcache && \
+    adduser -D appuser && \
+    chown appuser .
+
+# now we can change the user
+USER appuser
+
+CMD ["./server"]
